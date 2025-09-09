@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Crossing Item Tracker</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+        const { Plus, X, Package, TreePine } = lucideReact;
+
+        const AnimalCrossingTracker = () => {
+            // Your complete DIY recipe database - ALL 17 ITEMS
+            const itemDatabase = {
+                "Wooden Chair": { wood: 6, softwood: 0, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Wooden Simple Bed": { wood: 18, softwood: 0, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Log Garden Lounge": { wood: 0, softwood: 0, hardwood: 12, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Log Stool": { wood: 0, softwood: 0, hardwood: 4, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Water Pump": { wood: 0, softwood: 0, hardwood: 0, iron: 2, clay: 6, stone: 0, peaches: 0, weeds: 0 },
+                "Wooden Block Table": { wood: 0, softwood: 11, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Wooden Block Stereo": { wood: 0, softwood: 8, hardwood: 0, iron: 2, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Lily Wreath": { wood: 0, softwood: 0, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Natural Garden Chair": { wood: 0, softwood: 0, hardwood: 6, iron: 2, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Natural Garden Table": { wood: 0, softwood: 0, hardwood: 9, iron: 3, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Bird Bath": { wood: 0, softwood: 0, hardwood: 0, iron: 0, clay: 0, stone: 6, peaches: 0, weeds: 0 },
+                "Peach Surprise Box": { wood: 0, softwood: 4, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 10, weeds: 0 },
+                "Peach Chair": { wood: 5, softwood: 0, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 10, weeds: 0 },
+                "Pot": { wood: 0, softwood: 0, hardwood: 0, iron: 0, clay: 5, stone: 0, peaches: 0, weeds: 0 },
+                "Hay Bed": { wood: 0, softwood: 0, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 20 },
+                "Swinging Bench": { wood: 5, softwood: 7, hardwood: 0, iron: 0, clay: 0, stone: 0, peaches: 0, weeds: 0 },
+                "Barrel": { wood: 5, softwood: 0, hardwood: 0, iron: 2, clay: 0, stone: 0, peaches: 0, weeds: 0 }
+            };
+
+            const materialTypes = ['wood', 'softwood', 'hardwood', 'iron', 'clay', 'stone', 'peaches', 'weeds'];
+            const materialNames = {
+                wood: 'Wood',
+                softwood: 'Softwood', 
+                hardwood: 'Hardwood',
+                iron: 'Iron Nuggets',
+                clay: 'Clay',
+                stone: 'Stone',
+                peaches: 'Peaches',
+                weeds: 'Weeds'
+            };
+
+            const [trackedItems, setTrackedItems] = useState([
+                { id: 1, name: "Wooden Chair", made: true, delivered: false, plot: 3 },
+                { id: 2, name: "Log Garden Lounge", made: false, delivered: false, plot: 1 },
+                { id: 3, name: "Peach Chair", made: false, delivered: false, plot: 2 }
+            ]);
+
+            const [selectedItem, setSelectedItem] = useState("");
+            const [plotNumber, setPlotNumber] = useState("");
+
+            // Calculate total materials needed
+            const calculateMaterialsNeeded = () => {
+                const totals = {};
+                materialTypes.forEach(material => totals[material] = 0);
+
+                trackedItems.forEach(item => {
+                    if (!item.made && itemDatabase[item.name]) {
+                        materialTypes.forEach(material => {
+                            totals[material] += itemDatabase[item.name][material] || 0;
+                        });
+                    }
+                });
+
+                return totals;
+            };
+
+            const addItem = () => {
+                if (selectedItem && plotNumber) {
+                    const newItem = {
+                        id: Date.now(),
+                        name: selectedItem,
+                        made: false,
+                        delivered: false,
+                        plot: parseInt(plotNumber)
+                    };
+                    setTrackedItems([...trackedItems, newItem]);
+                    setSelectedItem("");
+                    setPlotNumber("");
+                }
+            };
+
+            const toggleMade = (id) => {
+                setTrackedItems(trackedItems.map(item => 
+                    item.id === id ? { ...item, made: !item.made } : item
+                ));
+            };
+
+            const toggleDelivered = (id) => {
+                setTrackedItems(trackedItems.map(item => 
+                    item.id === id ? { ...item, delivered: !item.delivered } : item
+                ));
+            };
+
+            const removeItem = (id) => {
+                setTrackedItems(trackedItems.filter(item => item.id !== id));
+            };
+
+            const materialsNeeded = calculateMaterialsNeeded();
+
+            return React.createElement('div', { className: "min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6" },
+                React.createElement('div', { className: "max-w-6xl mx-auto" },
+                    // Header
+                    React.createElement('div', { className: "text-center mb-8" },
+                        React.createElement('h1', { className: "text-4xl font-bold text-green-800 mb-2 flex items-center justify-center gap-3" },
+                            React.createElement(TreePine, { className: "text-green-600", size: 40 }),
+                            "Animal Crossing Item Tracker",
+                            React.createElement(Package, { className: "text-blue-600", size: 40 })
+                        ),
+                        React.createElement('p', { className: "text-gray-600" }, "Track your DIY projects and materials needed!"),
+                        React.createElement('p', { className: "text-sm text-gray-500 mt-1" }, `Currently tracking ${Object.keys(itemDatabase).length} DIY recipes`)
+                    ),
+
+                    React.createElement('div', { className: "grid md:grid-cols-2 gap-8" },
+                        // Materials Summary
+                        React.createElement('div', { className: "bg-white rounded-xl shadow-lg p-6" },
+                            React.createElement('h2', { className: "text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2" },
+                                React.createElement(Package, { size: 24 }),
+                                "Materials Needed"
+                            ),
+                            React.createElement('div', { className: "grid grid-cols-2 lg:grid-cols-4 gap-4" },
+                                materialTypes.map(material =>
+                                    React.createElement('div', { key: material, className: "bg-gray-50 rounded-lg p-3" },
+                                        React.createElement('div', { className: "text-sm font-medium text-gray-600" }, materialNames[material]),
+                                        React.createElement('div', { 
+                                            className: `text-2xl font-bold ${materialsNeeded[material] > 0 ? 'text-orange-600' : 'text-green-600'}` 
+                                        }, materialsNeeded[material])
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Add New Item
+                        React.createElement('div', { className: "bg-white rounded-xl shadow-lg p-6" },
+                            React.createElement('h2', { className: "text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2" },
+                                React.createElement(Plus, { size: 24 }),
+                                "Add Item to Track"
+                            ),
+                            React.createElement('div', { className: "space-y-4" },
+                                React.createElement('div', null,
+                                    React.createElement('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Item"),
+                                    React.createElement('select', {
+                                        value: selectedItem,
+                                        onChange: (e) => setSelectedItem(e.target.value),
+                                        className: "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    },
+                                        React.createElement('option', { value: "" }, "Select an item..."),
+                                        Object.keys(itemDatabase).sort().map(item =>
+                                            React.createElement('option', { key: item, value: item }, item)
+                                        )
+                                    )
+                                ),
+                                React.createElement('div', null,
+                                    React.createElement('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Plot Number"),
+                                    React.createElement('input', {
+                                        type: "number",
+                                        value: plotNumber,
+                                        onChange: (e) => setPlotNumber(e.target.value),
+                                        placeholder: "Enter plot number",
+                                        className: "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    })
+                                ),
+                                React.createElement('button', {
+                                    onClick: addItem,
+                                    disabled: !selectedItem || !plotNumber,
+                                    className: "w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                                }, "Add Item")
+                            )
+                        )
+                    ),
+
+                    // Tracked Items List
+                    React.createElement('div', { className: "mt-8 bg-white rounded-xl shadow-lg p-6" },
+                        React.createElement('h2', { className: "text-2xl font-bold text-gray-800 mb-6" }, "Your Projects"),
+                        
+                        // Special Notes
+                        React.createElement('div', { className: "bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" },
+                            React.createElement('h3', { className: "font-semibold text-blue-800 mb-2" }, "📝 Special Recipe Notes:"),
+                            React.createElement('ul', { className: "text-sm text-blue-700 space-y-1" },
+                                React.createElement('li', null, "• Lily Wreath: Requires 3 Yellow Lilies (flowers, not materials)"),
+                                React.createElement('li', null, "• Wooden Block Table: Requires 1 Wooden-block toy + 8 Softwood (total: 11 Softwood)"),
+                                React.createElement('li', null, "• Wooden Block Stereo: Requires 1 Wooden-block toy + 5 Softwood + 2 Iron (total: 8 Softwood)")
+                            )
+                        ),
+
+                        trackedItems.length === 0 ? 
+                            React.createElement('p', { className: "text-gray-500 text-center py-8" }, "No items tracked yet. Add some above!") :
+                            React.createElement('div', { className: "space-y-4" },
+                                trackedItems.map(item =>
+                                    React.createElement('div', { key: item.id, className: "border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow" },
+                                        React.createElement('div', { className: "flex items-center justify-between" },
+                                            React.createElement('div', { className: "flex-1" },
+                                                React.createElement('h3', { className: "text-lg font-semibold text-gray-800" }, item.name),
+                                                React.createElement('p', { className: "text-gray-600" }, `Plot: ${item.plot}`),
+                                                itemDatabase[item.name] && 
+                                                    React.createElement('div', { className: "mt-2 text-sm text-gray-500" },
+                                                        `Materials: ${materialTypes.filter(m => itemDatabase[item.name][m] > 0)
+                                                            .map(m => `${itemDatabase[item.name][m]} ${materialNames[m]}`)
+                                                            .join(', ')}`
+                                                    )
+                                            ),
+                                            React.createElement('div', { className: "flex items-center gap-3" },
+                                                React.createElement('button', {
+                                                    onClick: () => toggleMade(item.id),
+                                                    className: `px-4 py-2 rounded-lg font-medium transition-colors ${
+                                                        item.made 
+                                                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`
+                                                }, item.made ? '✓ Made' : 'Not Made'),
+                                                React.createElement('button', {
+                                                    onClick: () => toggleDelivered(item.id),
+                                                    className: `px-4 py-2 rounded-lg font-medium transition-colors ${
+                                                        item.delivered 
+                                                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' 
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`
+                                                }, item.delivered ? '✓ Delivered' : 'Not Delivered'),
+                                                React.createElement('button', {
+                                                    onClick: () => removeItem(item.id),
+                                                    className: "p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                }, React.createElement(X, { size: 20 }))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                    )
+                )
+            );
+        };
+
+        ReactDOM.render(React.createElement(AnimalCrossingTracker), document.getElementById('root'));
+    </script>
+</body>
+</html>
